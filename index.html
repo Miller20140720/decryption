@@ -12,80 +12,186 @@
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
 
+        /* ============ 主题变量 ============ */
+        :root {
+            /* 夜间模式（默认） */
+            --bg-gradient-1: #0b0f1c;
+            --bg-gradient-2: #1a1f2f;
+            --container-bg: rgba(18, 24, 38, 0.85);
+            --container-border: rgba(100, 160, 255, 0.2);
+            --container-shadow: rgba(0, 0, 0, 0.8);
+            --url-bg: rgba(0, 0, 0, 0.3);
+            --url-color: #7f8fa6;
+            --url-border: #2a3448;
+            --badge-bg-1: #1e2b4a;
+            --badge-bg-2: #0f1628;
+            --badge-border: #3e5a8a;
+            --badge-color: #b7d0ff;
+            --question-area-bg: #0b101b;
+            --question-area-border: #26324a;
+            --question-text-bg: #111826;
+            --question-text-border: #2c3e5e;
+            --question-text-color: #e8f0ff;
+            --input-bg: #0d1422;
+            --input-border: #26344e;
+            --input-color: #e8f0ff;
+            --input-placeholder: #4e6180;
+            --input-focus-bg: #0e1628;
+            --reset-border: #2f405e;
+            --reset-color: #9bb1d0;
+            --reset-hover-bg: #1b2335;
+            --reset-hover-border: #4c6a97;
+            --reset-hover-color: #cddfff;
+            --footer-border: #1f2a3c;
+            --footer-color: #3c4c66;
+            --toggle-bg: rgba(0, 0, 0, 0.3);
+            --toggle-border: #2a3448;
+            --toggle-color: #b7d0ff;
+        }
+
+        /* 白天模式 */
+        body.light-mode {
+            --bg-gradient-1: #e8eefc;
+            --bg-gradient-2: #d4e0f7;
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --container-border: rgba(80, 130, 220, 0.3);
+            --container-shadow: rgba(80, 110, 180, 0.25);
+            --url-bg: rgba(255, 255, 255, 0.8);
+            --url-color: #4a5878;
+            --url-border: #b6c6e0;
+            --badge-bg-1: #d6e4ff;
+            --badge-bg-2: #b8cdf5;
+            --badge-border: #8bb0e8;
+            --badge-color: #1a3a7a;
+            --question-area-bg: #f5f8ff;
+            --question-area-border: #c8d6ef;
+            --question-text-bg: #ffffff;
+            --question-text-border: #c8d6ef;
+            --question-text-color: #1a2b4a;
+            --input-bg: #ffffff;
+            --input-border: #b8c8e5;
+            --input-color: #1a2b4a;
+            --input-placeholder: #8095b8;
+            --input-focus-bg: #ffffff;
+            --reset-border: #b8c8e5;
+            --reset-color: #4a5878;
+            --reset-hover-bg: #e0e9f8;
+            --reset-hover-border: #8bb0e8;
+            --reset-hover-color: #1a3a7a;
+            --footer-border: #c8d6ef;
+            --footer-color: #8095b8;
+            --toggle-bg: rgba(255, 255, 255, 0.8);
+            --toggle-border: #b6c6e0;
+            --toggle-color: #1a3a7a;
+        }
+
         body {
             min-height: 100vh;
-            background: linear-gradient(145deg, #0b0f1c 0%, #1a1f2f 100%);
+            background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
+            transition: background 0.4s ease;
         }
 
         .game-container {
             max-width: 800px;
             width: 100%;
-            background: rgba(18, 24, 38, 0.85);
+            background: var(--container-bg);
             backdrop-filter: blur(10px);
             border-radius: 2.5rem;
             padding: 2.5rem 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
-                        0 0 0 1px rgba(120, 180, 255, 0.15),
+            box-shadow: 0 25px 50px -12px var(--container-shadow),
+                        0 0 0 1px var(--container-border),
                         inset 0 1px 2px rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(100, 160, 255, 0.2);
-            transition: all 0.3s ease;
+            border: 1px solid var(--container-border);
+            transition: all 0.4s ease;
         }
 
         .site-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: center;
             margin-bottom: 2rem;
             flex-wrap: wrap;
             gap: 0.5rem;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
         .site-url {
             font-size: 0.9rem;
             letter-spacing: 0.5px;
-            color: #7f8fa6;
+            color: var(--url-color);
             font-weight: 400;
             text-transform: lowercase;
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--url-bg);
             padding: 0.3rem 1rem;
             border-radius: 30px;
-            border: 1px solid #2a3448;
+            border: 1px solid var(--url-border);
+            transition: all 0.3s ease;
+        }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1rem;
+            background: var(--toggle-bg);
+            color: var(--toggle-color);
+            border: 1px solid var(--toggle-border);
+            padding: 0.35rem 0.9rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            user-select: none;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 12px rgba(110, 168, 255, 0.35);
         }
 
         .level-badge {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #b7d0ff;
-            background: linear-gradient(135deg, #1e2b4a, #0f1628);
+            color: var(--badge-color);
+            background: linear-gradient(135deg, var(--badge-bg-1), var(--badge-bg-2));
             padding: 0.5rem 1.4rem;
             border-radius: 40px;
-            border: 1px solid #3e5a8a;
+            border: 1px solid var(--badge-border);
             box-shadow: 0 0 12px rgba(80, 150, 255, 0.2);
             letter-spacing: 0.5px;
+            transition: all 0.3s ease;
         }
 
         .level-badge span {
-            color: #fff;
+            color: var(--badge-color);
             font-weight: 800;
             margin-right: 6px;
-            text-shadow: 0 0 8px #6ea8ff;
+            text-shadow: 0 0 8px rgba(110, 168, 255, 0.6);
         }
 
         .question-area {
-            background: #0b101b;
+            background: var(--question-area-bg);
             border-radius: 1.8rem;
             padding: 2rem 2rem;
             margin: 1.5rem 0 2rem;
-            border: 1px solid #26324a;
-            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6), 0 8px 20px -8px black;
+            border: 1px solid var(--question-area-border);
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.25), 0 8px 20px -8px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
         }
 
         .question-text {
-            color: #e8f0ff;
+            color: var(--question-text-color);
             font-size: 2.4rem;
             font-weight: 700;
             line-height: 1.4;
@@ -94,13 +200,14 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: #111826;
+            background: var(--question-text-bg);
             border-radius: 1.5rem;
             padding: 1.8rem 1.5rem;
-            border: 1px solid #2c3e5e;
+            border: 1px solid var(--question-text-border);
             letter-spacing: 4px;
-            text-shadow: 0 0 24px rgba(110, 168, 255, 0.5);
+            text-shadow: 0 0 24px rgba(110, 168, 255, 0.3);
             word-break: break-word;
+            transition: all 0.3s ease;
         }
 
         .input-section {
@@ -114,10 +221,10 @@
             width: 100%;
             padding: 1.2rem 1.5rem;
             font-size: 1.2rem;
-            background: #0d1422;
-            border: 2px solid #26344e;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
             border-radius: 60px;
-            color: #e8f0ff;
+            color: var(--input-color);
             outline: none;
             transition: all 0.2s;
             letter-spacing: 0.5px;
@@ -125,15 +232,15 @@
         }
 
         .answer-input::placeholder {
-            color: #4e6180;
+            color: var(--input-placeholder);
             font-weight: 400;
             font-style: italic;
         }
 
         .answer-input:focus {
             border-color: #4b7bec;
-            box-shadow: 0 0 0 4px rgba(75, 123, 236, 0.25), 0 0 18px #1e3a8a;
-            background: #0e1628;
+            box-shadow: 0 0 0 4px rgba(75, 123, 236, 0.25), 0 0 18px rgba(30, 58, 138, 0.6);
+            background: var(--input-focus-bg);
         }
 
         .button-group {
@@ -182,16 +289,16 @@
 
         .btn-reset {
             background: transparent;
-            border: 1px solid #2f405e;
-            color: #9bb1d0;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--reset-border);
+            color: var(--reset-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             flex: 1;
         }
 
         .btn-reset:hover {
-            background: #1b2335;
-            border-color: #4c6a97;
-            color: #cddfff;
+            background: var(--reset-hover-bg);
+            border-color: var(--reset-hover-border);
+            color: var(--reset-hover-color);
         }
 
         .message {
@@ -217,10 +324,11 @@
             margin-top: 2.5rem;
             font-size: 0.75rem;
             text-align: center;
-            color: #3c4c66;
-            border-top: 1px solid #1f2a3c;
+            color: var(--footer-color);
+            border-top: 1px solid var(--footer-border);
             padding-top: 1.5rem;
             letter-spacing: 0.8px;
+            transition: all 0.3s ease;
         }
 
         @keyframes pulse {
@@ -235,9 +343,12 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- 顶部：网址 + 标题区域 -->
+        <!-- 顶部：网址 + 主题切换 + 标题区域 -->
         <div class="site-header">
-            <div class="site-url">decryption.miller.com</div>
+            <div class="header-left">
+                <div class="site-url">decryption.miller.com</div>
+                <div class="theme-toggle" id="themeToggle" title="切换白天/夜间模式">🌙 夜间</div>
+            </div>
             <div class="level-badge" id="levelDisplay">
                 <span>Level</span> <span id="levelNumber">1</span>
             </div>
@@ -270,8 +381,6 @@
         (function() {
             // ============================================================
             //  关卡配置列表  ← 只需要改这里
-            //  每一项： { question: 题干, answer: 正确答案 }
-            //  题目顺序就是关卡顺序（第 1 项是 Level 1，以此类推）
             // ============================================================
             const LEVELS = [
                 { question: "Please enter the answer:", answer: "answer" },
@@ -290,16 +399,42 @@
             ];
 
             // ---------- 运行时状态 ----------
-            let currentLevelIndex = 0;   // 当前关卡索引 (0-based)
-            let isProcessing = false;    // 防止重复提交的锁
+            let currentLevelIndex = 0;
+            let isProcessing = false;
 
             // ---------- DOM 元素 ----------
             const questionTextDiv = document.getElementById('questionText');
             const answerInput     = document.getElementById('answerInput');
             const messageDiv      = document.getElementById('message');
+            const themeToggle     = document.getElementById('themeToggle');
+
+            // ---------- 主题切换逻辑 ----------
+            // 读取本地保存的主题偏好，默认是夜间模式
+            function loadTheme() {
+                const saved = localStorage.getItem('decryption-theme');
+                if (saved === 'light') {
+                    document.body.classList.add('light-mode');
+                    themeToggle.textContent = '☀️ 白天';
+                } else {
+                    document.body.classList.remove('light-mode');
+                    themeToggle.textContent = '🌙 夜间';
+                }
+            }
+
+            // 切换主题
+            function toggleTheme() {
+                if (document.body.classList.contains('light-mode')) {
+                    document.body.classList.remove('light-mode');
+                    themeToggle.textContent = '🌙 夜间';
+                    localStorage.setItem('decryption-theme', 'dark');
+                } else {
+                    document.body.classList.add('light-mode');
+                    themeToggle.textContent = '☀️ 白天';
+                    localStorage.setItem('decryption-theme', 'light');
+                }
+            }
 
             // ---------- 辅助函数 ----------
-            // 更新关卡号显示 (Level 对应题号，从1开始)
             function updateLevelDisplay() {
                 const span = document.getElementById('levelNumber');
                 if (span) {
@@ -307,24 +442,20 @@
                 }
             }
 
-            // 更新题干：从 LEVELS 列表里读取当前关卡的 question
             function updateQuestionText() {
-    const level = LEVELS[currentLevelIndex];
-    if (level) {
-        // 把 \n 换成 <br>，再用 innerHTML 渲染，支持换行
-        questionTextDiv.innerHTML = level.question.replace(/\n/g, '<br>');
-    } else {
-        questionTextDiv.textContent = '🏁';
-    }
-}
+                const level = LEVELS[currentLevelIndex];
+                if (level) {
+                    questionTextDiv.innerHTML = level.question.replace(/\n/g, '<br>');
+                } else {
+                    questionTextDiv.textContent = '🏁';
+                }
+            }
 
-            // 清除消息
             function clearMessage() {
                 messageDiv.textContent = '';
                 messageDiv.classList.remove('error', 'success');
             }
 
-            // 显示消息
             function setMessage(text, type = 'error') {
                 messageDiv.textContent = text;
                 messageDiv.classList.remove('error', 'success');
@@ -335,19 +466,16 @@
                 }
             }
 
-            // 重置输入框和消息，并聚焦
             function resetInputAndFocus() {
                 answerInput.value = '';
                 clearMessage();
                 answerInput.focus();
             }
 
-            // 检查是否通关（所有关卡完成）
             function isGameComplete() {
                 return currentLevelIndex >= LEVELS.length;
             }
 
-            // 提交答案逻辑 (带锁)
             function handleSubmit() {
                 if (isProcessing) return;
 
@@ -365,11 +493,9 @@
 
                 const expectedAnswer = LEVELS[currentLevelIndex].answer;
                 if (userAnswer.toLowerCase() === expectedAnswer.toLowerCase()) {
-                    // 正确：上锁
                     isProcessing = true;
                     setMessage(`✓ 正确！进入 Level ${currentLevelIndex + 2} ...`, 'success');
 
-                    // 禁用提交按钮防止重复点击
                     const submitBtnNow = document.getElementById('submitBtn');
                     if (submitBtnNow) submitBtnNow.disabled = true;
 
@@ -377,7 +503,6 @@
                         currentLevelIndex++;
 
                         if (isGameComplete()) {
-                            // 通关
                             const levelDisplay = document.getElementById('levelDisplay');
                             levelDisplay.innerHTML = '<span>🏁</span> 通关';
 
@@ -387,28 +512,24 @@
                             questionTextDiv.textContent = '🏁';
                             answerInput.blur();
                         } else {
-                            // 下一关
                             answerInput.disabled = false;
                             answerInput.placeholder = '输入正确答案...';
                             updateLevelDisplay();
-                            updateQuestionText();  // 从 LEVELS 读取新题号
+                            updateQuestionText();
                             resetInputAndFocus();
                             clearMessage();
                         }
 
-                        // 解锁
                         isProcessing = false;
                         const submitBtnAfter = document.getElementById('submitBtn');
                         if (submitBtnAfter) submitBtnAfter.disabled = false;
                     }, 300);
                 } else {
-                    // 错误
                     setMessage(`✗ 答案错误，再试试看`, 'error');
                     answerInput.select();
                 }
             }
 
-            // 重置整个游戏
             function resetGame() {
                 currentLevelIndex = 0;
                 isProcessing = false;
@@ -424,7 +545,7 @@
                 answerInput.disabled = false;
                 answerInput.placeholder = '输入正确答案...';
 
-                updateQuestionText();  // 从 LEVELS 读取第 1 关题干
+                updateQuestionText();
                 resetInputAndFocus();
                 clearMessage();
 
@@ -432,7 +553,6 @@
                 if (submitBtnNow) submitBtnNow.disabled = false;
             }
 
-            // 初始化页面
             function init() {
                 currentLevelIndex = 0;
                 isProcessing = false;
@@ -454,34 +574,33 @@
                 if (submitBtnNow) submitBtnNow.disabled = false;
             }
 
-            // 绑定事件
             function bindEvents() {
-                // 提交按钮（克隆替换，避免重复监听）
                 const oldSubmitBtn = document.getElementById('submitBtn');
                 const newSubmitBtn = oldSubmitBtn.cloneNode(true);
                 oldSubmitBtn.parentNode.replaceChild(newSubmitBtn, oldSubmitBtn);
                 newSubmitBtn.addEventListener('click', handleSubmit);
 
-                // 重置按钮
                 const oldResetBtn = document.getElementById('resetBtn');
                 const newResetBtn = oldResetBtn.cloneNode(true);
                 oldResetBtn.parentNode.replaceChild(newResetBtn, oldResetBtn);
                 newResetBtn.addEventListener('click', resetGame);
 
-                // 回车提交
                 answerInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         handleSubmit();
                     }
                 });
+
+                // 主题切换按钮
+                themeToggle.addEventListener('click', toggleTheme);
             }
 
             // 启动
+            loadTheme();
             init();
             bindEvents();
 
-            // 暴露到全局，方便调试
             window.resetGame = resetGame;
         })();
     </script>
