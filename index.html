@@ -14,7 +14,6 @@
 
         /* ============ 主题变量 ============ */
         :root {
-            /* 夜间模式（默认） */
             --bg-gradient-1: #0b0f1c;
             --bg-gradient-2: #1a1f2f;
             --container-bg: rgba(18, 24, 38, 0.85);
@@ -47,9 +46,14 @@
             --toggle-bg: rgba(0, 0, 0, 0.3);
             --toggle-border: #2a3448;
             --toggle-color: #b7d0ff;
+            --hint-bg: #111826;
+            --hint-border: #2c3e5e;
+            --hint-header-bg: #1a2438;
+            --hint-header-hover: #1f2c46;
+            --hint-color: #b7d0ff;
+            --hint-content-color: #d0dcf0;
         }
 
-        /* 白天模式 */
         body.light-mode {
             --bg-gradient-1: #e8eefc;
             --bg-gradient-2: #d4e0f7;
@@ -83,6 +87,12 @@
             --toggle-bg: rgba(255, 255, 255, 0.8);
             --toggle-border: #b6c6e0;
             --toggle-color: #1a3a7a;
+            --hint-bg: #ffffff;
+            --hint-border: #c8d6ef;
+            --hint-header-bg: #eaf1ff;
+            --hint-header-hover: #dbe7fc;
+            --hint-color: #1a3a7a;
+            --hint-content-color: #2c3e5e;
         }
 
         body {
@@ -138,7 +148,6 @@
             transition: all 0.3s ease;
         }
 
-        /* 主题切换按钮 */
         .theme-toggle {
             cursor: pointer;
             font-size: 1rem;
@@ -184,7 +193,7 @@
             background: var(--question-area-bg);
             border-radius: 1.8rem;
             padding: 2rem 2rem;
-            margin: 1.5rem 0 2rem;
+            margin: 1.5rem 0 1rem;
             border: 1px solid var(--question-area-border);
             box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.25), 0 8px 20px -8px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
@@ -208,6 +217,65 @@
             text-shadow: 0 0 24px rgba(110, 168, 255, 0.3);
             word-break: break-word;
             transition: all 0.3s ease;
+        }
+
+        /* ============ 折叠提示框 ============ */
+        .hints-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .hint {
+            border-radius: 1.2rem;
+            overflow: hidden;
+            border: 1px solid var(--hint-border);
+            background: var(--hint-bg);
+            transition: all 0.3s ease;
+        }
+
+        .hint-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.4rem;
+            cursor: pointer;
+            background: var(--hint-header-bg);
+            color: var(--hint-color);
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            user-select: none;
+            transition: background 0.25s ease;
+        }
+
+        .hint-header:hover {
+            background: var(--hint-header-hover);
+        }
+
+        .hint-header .arrow {
+            font-size: 0.85rem;
+            transition: transform 0.3s ease;
+        }
+
+        .hint.open .hint-header .arrow {
+            transform: rotate(180deg);
+        }
+
+        .hint-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            padding: 0 1.4rem;
+            color: var(--hint-content-color);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .hint.open .hint-content {
+            max-height: 600px;
+            padding: 1rem 1.4rem 1.2rem;
         }
 
         .input-section {
@@ -361,6 +429,24 @@
             </div>
         </div>
 
+        <!-- 折叠提示框 -->
+        <div class="hints-container">
+            <div class="hint" id="hint1">
+                <div class="hint-header" data-hint="1">
+                    <span>💡 Hint 1</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="hint-content" id="hint1Content"></div>
+            </div>
+            <div class="hint" id="hint2">
+                <div class="hint-header" data-hint="2">
+                    <span>💡 Hint 2</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="hint-content" id="hint2Content"></div>
+            </div>
+        </div>
+
         <!-- 输入和操作区 -->
         <div class="input-section">
             <input type="text" id="answerInput" class="answer-input" placeholder="输入正确答案..." autocomplete="off" autofocus>
@@ -380,24 +466,26 @@
     <script>
         (function() {
             // ============================================================
-            //  关卡配置列表
+            //  关卡配置列表  ← 只需要改这里
+            //  每一项： { question: 题干, answer: 正确答案, hint1: 提示1, hint2: 提示2 }
+            //  hint1 / hint2 可以留空字符串 ""，表示暂时没有提示
             // ============================================================
             const LEVELS = [
-                { question: "Please enter the answer:", answer: "answer" },
-                { question: ":rewsna eht retne esaelP", answer: "rewsna" },
-                { question: "What's name?", answer: "name" },
-                { question: "If the answer to this question is not unique, enter \"YE5\"; otherwise, enter \"N0\"", answer: "N0" },
-                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem5.png' style='max-width:100%; height:auto;' alt='problem5'>", answer: "30" },
-                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem6.png' style='max-width:100%; height:auto;' alt='problem6'>", answer: "MILLER" },
-                { question: "[(4+2-9/3)*2]**(6^5)=?", answer: "216" },
-                { question: "apple+orange=e\ndiding+doing=ding\nor+or=oror\nintervention+intention+(information+insertion)=?", answer: "intntion" },
-                { question: "$$\n\\lceil\\lim_{n\\to\\infty}\\sum\\limits_{i=1}^{n}\\frac{8}{n^2}\\sqrt{i(n-i)}\\rceil=?\n$$", answer: "4" },
-                { question: "Ho ar yo_u? I mr fin, _humthk you", answer: "we_are_human." },
-                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem11.png' style='max-width:100%; height:auto;' alt='problem11'>", answer: "nnnand" },
-                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem17.png' style='max-width:100%; height:auto;' alt='problem17'>", answer: "10" },
-                { question: "The answer to Level 2c624232cd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3 is:", answer: "intntion" },
-                { question: "有一首诗是这样的：\n----------------------\n回忆啊，  \n过去啊，  \n往日朵朵白云啊！\n\n云间亦有别：  \n积云厚，  \n而卷云飘渺，  \n掠过便无法忘怀。  \n时间的冲刷，  \n留下了些许残骸。\n\n回忆宛如入梦，  \n太过清楚则无法愉悦幻想，  \n太过模糊却坠入虚无。  \n只有  \n雾间山水、  \n纱下女子、  \n恰好的朦胧，  \n才能满足对美的苛求。\n\n回忆，\n将我裹进纸页里：\n分聚的朋友、\n推建的街道……\n种种线索让我出发，\n沿时间逆流而上。\n过去无法重来，\n我只是一个过客。\n但仍渴望在回忆中留下闲暇，\n在场景前驻足，\n在朦胧里瞭望，\n以此感受美好。\n时光流过身体，\n便心满意足。\n\n过去已然凝固，\n我与回忆向前。\n可因疏于保管，\n云也会有所改变，\n给回忆带来不少挑战。\n\n又能在何处倾诉？\n难言于知己。\n----------------------\n小觉也写了一首诗： \n---------------------- \n回思呀， \n昔去呀， \n清穹朵絮漫流呀！ \n \n天际自有异： \n积絮柔， \n风卷烟轻盈， \n相逢便刻于心间。 \n岁月在冲洗， \n留藏着零星痕迹。 \n \n浮忆好似酣眠， \n视界明了难滋生温柔遐想， \n轮廓虚糊便深陷空茫。 \n只余 \n烟间丘壑、 \n薄纱女容、 \n分寸的影像， \n才堪匹配心底里执念。 \n \n旧忆， \n尽数裹入信笺中： \n离合的伙伴、 \n蜿蜒的长巷…… \n万千踪迹引我远行， \n顺流年逆溯前行。 \n前尘无从再临， \n我本属人间行者。 \n但还是期许于旧景偷得清闲， \n于场隅间停驻， \n于朦雾中远眺， \n借此品赏温柔。 \n流光身边荡漾， \n就心自安然。 \n \n前尘早已凝定， \n我携旧事前行。 \n皆因轻在珍藏， \n流云自有些更迭， \n给旧事引出诸多困顿。 \n \n我该在哪处停留？ \n我问我自己。 \n---------------------- \n他自称与原文 0 重合。可他的朋友总感觉怪怪的，却不知道哪里出了问题。请你帮小觉的朋友写一份由 38 个小写英文字母组成的建议给小觉吧！（一定要一行一行看哦）", answer: "abcdabcdabkdabccabcccfdcaabbbbbeabdaee" },
-                { question: "Please enter the answer:", answer: "Congratulations, you are about to complete the level!" },
+                { question: "Please enter the answer:", answer: "answer", hint1: "Literal meaning", hint2: "Answer is answer." },
+                { question: ":rewsna eht retne esaelP", answer: "rewsna", hint1: "1 leveL", hint2: "" },
+                { question: "What's name?", answer: "name", hint1: "Literal meaning", hint2: "" },
+                { question: "If the answer to this question is not unique, enter \"YE5\"; otherwise, enter \"N0\"", answer: "N0", hint1: "", hint2: "" },
+                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem5.png' style='max-width:100%; height:auto;' alt='problem5'>", answer: "30", hint1: "There are gaps between characters", hint2: "" },
+                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem6.png' style='max-width:100%; height:auto;' alt='problem6'>", answer: "MILLER", hint1: "Name", hint2: "" },
+                { question: "[(4+2-9/3)*2]**(6^5)=?", answer: "216", hint1: "\"^\" and \"**\" are operations in programming", hint2: "\"^\" is operations in C, \"**\" is operations in python." },
+                { question: "apple+orange=e\ndiding+doing=ding\nor+or=oror\nintervention+intention+(information+insertion)=?", answer: "intntion", hint1: "Beform and after", hint2: "" },
+                { question: "$$\n\\lceil\\lim_{n\\to\\infty}\\sum\\limits_{i=1}^{n}\\frac{8}{n^2}\\sqrt{i(n-i)}\\rceil=?\n$$", answer: "4", hint1: "What \"$\" mean", hint2: "KaTeX" },
+                { question: "Ho ar yo_u? I mr fin, _humthk you", answer: "we_are_human.", hint1: "insert and delete", hint2: "" },
+                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem11.png' style='max-width:100%; height:auto;' alt='problem11'>", answer: "nnnand", hint1: "基督受难像+兴奋=红色\nhyw-采煤工人=黄色\n2*lama=llama\n？/ nand = 3", hint2: "First and after" },
+                { question: "<img src='https://raw.githubusercontent.com/Miller20140720/decryption/main/problem17.png' style='max-width:100%; height:auto;' alt='problem17'>", answer: "10", hint1: "vertical view", hint2: "Tower of Hanoi" },
+                { question: "The answer to Level 2c624232cd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3 is:", answer: "intntion", hint1: "SHA256", hint2: "" },
+                { question: "有一首诗是这样的：\n----------------------\n回忆啊，  \n过去啊，  \n往日朵朵白云啊！\n\n云间亦有别：  \n积云厚，  \n而卷云飘渺，  \n掠过便无法忘怀。  \n时间的冲刷，  \n留下了些许残骸。\n\n回忆宛如入梦，  \n太过清楚则无法愉悦幻想，  \n太过模糊却坠入虚无。  \n只有  \n雾间山水、  \n纱下女子、  \n恰好的朦胧，  \n才能满足对美的苛求。\n\n回忆，\n将我裹进纸页里：\n分聚的朋友、\n推建的街道……\n种种线索让我出发，\n沿时间逆流而上。\n过去无法重来，\n我只是一个过客。\n但仍渴望在回忆中留下闲暇，\n在场景前驻足，\n在朦胧里瞭望，\n以此感受美好。\n时光流过身体，\n便心满意足。\n\n过去已然凝固，\n我与回忆向前。\n可因疏于保管，\n云也会有所改变，\n给回忆带来不少挑战。\n\n又能在何处倾诉？\n难言于知己。\n----------------------\n小觉也写了一首诗： \n---------------------- \n回思呀， \n昔去呀， \n清穹朵絮漫流呀！ \n \n天际自有异： \n积絮柔， \n风卷烟轻盈， \n相逢便刻于心间。 \n岁月在冲洗， \n留藏着零星痕迹。 \n \n浮忆好似酣眠， \n视界明了难滋生温柔遐想， \n轮廓虚糊便深陷空茫。 \n只余 \n烟间丘壑、 \n薄纱女容、 \n分寸的影像， \n才堪匹配心底里执念。 \n \n旧忆， \n尽数裹入信笺中： \n离合的伙伴、 \n蜿蜒的长巷…… \n万千踪迹引我远行， \n顺流年逆溯前行。 \n前尘无从再临， \n我本属人间行者。 \n但还是期许于旧景偷得清闲， \n于场隅间停驻， \n于朦雾中远眺， \n借此品赏温柔。 \n流光身边荡漾， \n就心自安然。 \n \n前尘早已凝定， \n我携旧事前行。 \n皆因轻在珍藏， \n流云自有些更迭， \n给旧事引出诸多困顿。 \n \n我该在哪处停留？ \n我问我自己。 \n---------------------- \n他自称与原文 0 重合。可他的朋友总感觉怪怪的，却不知道哪里出了问题。请你帮小觉的朋友写一份由 38 个小写英文字母组成的建议给小觉吧！（一定要一行一行看哦）", answer: "abcdabcdabkdabccabcccfdcaabbbbbeabdaee", hint1: "convertnumbersintocorrespondingletters", hint2: "" },
+                { question: "Please enter the answer:", answer: "Congratulations, you are about to complete the level!", hint1: "", hint2: "" },
             ];
 
             // ---------- 运行时状态 ----------
@@ -409,9 +497,12 @@
             const answerInput     = document.getElementById('answerInput');
             const messageDiv      = document.getElementById('message');
             const themeToggle     = document.getElementById('themeToggle');
+            const hint1Content    = document.getElementById('hint1Content');
+            const hint2Content    = document.getElementById('hint2Content');
+            const hint1Box        = document.getElementById('hint1');
+            const hint2Box        = document.getElementById('hint2');
 
             // ---------- 主题切换逻辑 ----------
-            // 读取本地保存的主题偏好，默认是夜间模式
             function loadTheme() {
                 const saved = localStorage.getItem('decryption-theme');
                 if (saved === 'light') {
@@ -423,7 +514,6 @@
                 }
             }
 
-            // 切换主题
             function toggleTheme() {
                 if (document.body.classList.contains('light-mode')) {
                     document.body.classList.remove('light-mode');
@@ -444,13 +534,27 @@
                 }
             }
 
+            // 更新题干与提示
             function updateQuestionText() {
                 const level = LEVELS[currentLevelIndex];
                 if (level) {
                     questionTextDiv.innerHTML = level.question.replace(/\n/g, '<br>');
+                    // 更新提示内容
+                    hint1Content.innerHTML = (level.hint1 || '').replace(/\n/g, '<br>');
+                    hint2Content.innerHTML = (level.hint2 || '').replace(/\n/g, '<br>');
                 } else {
                     questionTextDiv.textContent = '🏁';
+                    hint1Content.innerHTML = '';
+                    hint2Content.innerHTML = '';
                 }
+                // 切换关卡时，折叠提示框
+                hint1Box.classList.remove('open');
+                hint2Box.classList.remove('open');
+            }
+
+            // 切换单个折叠提示框
+            function toggleHint(box) {
+                box.classList.toggle('open');
             }
 
             function clearMessage() {
@@ -512,6 +616,10 @@
                             answerInput.placeholder = '已通关';
                             setMessage('🏆 完美！你已解开所有层级。', 'success');
                             questionTextDiv.textContent = '🏁';
+                            hint1Content.innerHTML = '';
+                            hint2Content.innerHTML = '';
+                            hint1Box.classList.remove('open');
+                            hint2Box.classList.remove('open');
                             answerInput.blur();
                         } else {
                             answerInput.disabled = false;
@@ -594,8 +702,11 @@
                     }
                 });
 
-                // 主题切换按钮
                 themeToggle.addEventListener('click', toggleTheme);
+
+                // 折叠提示框点击事件
+                hint1Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint1Box));
+                hint2Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint2Box));
             }
 
             // 启动
