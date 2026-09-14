@@ -26,6 +26,10 @@
             --badge-bg-2: #0f1628;
             --badge-border: #3e5a8a;
             --badge-color: #b7d0ff;
+            --score-bg-1: #163a2e;
+            --score-bg-2: #0b241c;
+            --score-border: #2e8a63;
+            --score-color: #8effc2;
             --question-area-bg: #0b101b;
             --question-area-border: #26324a;
             --question-text-bg: #111826;
@@ -67,6 +71,10 @@
             --badge-bg-2: #b8cdf5;
             --badge-border: #8bb0e8;
             --badge-color: #1a3a7a;
+            --score-bg-1: #c8f5dd;
+            --score-bg-2: #a8ecc8;
+            --score-border: #4cbf87;
+            --score-color: #0d4a2e;
             --question-area-bg: #f5f8ff;
             --question-area-border: #c8d6ef;
             --question-text-bg: #ffffff;
@@ -135,12 +143,18 @@
             flex-wrap: wrap;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
         .site-url {
             font-size: 0.9rem;
             letter-spacing: 0.5px;
             color: var(--url-color);
             font-weight: 400;
-            text-transform: lowercase;
             background: var(--url-bg);
             padding: 0.3rem 1rem;
             border-radius: 30px;
@@ -167,6 +181,44 @@
         .theme-toggle:hover {
             transform: scale(1.06);
             box-shadow: 0 0 12px rgba(110, 168, 255, 0.35);
+        }
+
+        /* 分数徽章 */
+        .score-badge {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--score-color);
+            background: linear-gradient(135deg, var(--score-bg-1), var(--score-bg-2));
+            padding: 0.5rem 1.4rem;
+            border-radius: 40px;
+            border: 1px solid var(--score-border);
+            box-shadow: 0 0 12px rgba(80, 255, 150, 0.25);
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .score-badge .score-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .score-badge .score-value {
+            font-weight: 800;
+            text-shadow: 0 0 8px rgba(140, 255, 190, 0.6);
+        }
+
+        .score-badge.bump {
+            animation: scoreBump 0.4s ease;
+        }
+
+        @keyframes scoreBump {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.18); }
+            100% { transform: scale(1); }
         }
 
         .level-badge {
@@ -252,6 +304,29 @@
 
         .hint-header:hover {
             background: var(--hint-header-hover);
+        }
+
+        .hint-header .hint-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 提示扣分标 */
+        .hint-cost-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ffb86b;
+            background: rgba(255, 184, 107, 0.12);
+            border: 1px solid rgba(255, 184, 107, 0.4);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            letter-spacing: 0.2px;
+        }
+
+        .hint.open .hint-cost-tag {
+            color: #ff9c5b;
+            background: rgba(255, 156, 91, 0.18);
         }
 
         .hint-header .arrow {
@@ -411,14 +486,20 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- 顶部：网址 + 主题切换 + 标题区域 -->
+        <!-- 顶部：网址 + 主题切换 + 分数 + 标题区域 -->
         <div class="site-header">
             <div class="header-left">
                 <div class="site-url">https://miller20140720.github.io/decryption/</div>
                 <div class="theme-toggle" id="themeToggle" title="切换白天/夜间模式">🌙 夜间</div>
             </div>
-            <div class="level-badge" id="levelDisplay">
-                <span>Level</span> <span id="levelNumber">1</span>
+            <div class="header-right">
+                <div class="score-badge" id="scoreBadge">
+                    <span class="score-label">总分</span>
+                    <span class="score-value" id="scoreValue">0</span>
+                </div>
+                <div class="level-badge" id="levelDisplay">
+                    <span>Level</span> <span id="levelNumber">1</span>
+                </div>
             </div>
         </div>
 
@@ -433,14 +514,20 @@
         <div class="hints-container">
             <div class="hint" id="hint1">
                 <div class="hint-header" data-hint="1">
-                    <span>💡 Hint 1</span>
+                    <span class="hint-title">
+                        <span>💡 Hint 1</span>
+                        <span class="hint-cost-tag" id="hint1CostTag">-0</span>
+                    </span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="hint-content" id="hint1Content"></div>
             </div>
             <div class="hint" id="hint2">
                 <div class="hint-header" data-hint="2">
-                    <span>💡 Hint 2</span>
+                    <span class="hint-title">
+                        <span>💡 Hint 2</span>
+                        <span class="hint-cost-tag" id="hint2CostTag">-0</span>
+                    </span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="hint-content" id="hint2Content"></div>
@@ -467,30 +554,41 @@
         (function() {
             // ============================================================
             //  关卡配置列表  ← 只需要改这里
-            //  每一项： { question: 题干, answer: 正确答案, hint1: 提示1, hint2: 提示2 }
-            //  hint1 / hint2 可以留空字符串 ""，表示暂时没有提示
+            //  每一项： {
+            //      question: 题干,
+            //      answer: 正确答案,
+            //      hint1: 提示1,
+            //      hint2: 提示2,
+            //      score: 本关基础分（答对可得）,
+            //      hint1Cost: 展开 Hint 1 扣的分,
+            //      hint2Cost: 展开 Hint 2 扣的分
+            //  }
+            //  hint1 / hint2 可以为空字符串 ""，表示暂无提示。
+            //  扣分只在首次展开时生效，重复展开不再扣。
             // ============================================================
             const LEVELS = [
-                { question: "Please enter the answer:", answer: "answer", hint1: "Literal meaning", hint2: "Answer is answer." },
-                { question: ":rewsna eht retne esaelP", answer: "rewsna", hint1: "1 leveL", hint2: "flip Level 1's answer." },
-                { question: "What's name?", answer: "name", hint1: "Literal meaning", hint2: "Name is name." },
-                { question: "If the answer to this question is not unique, enter \"YE5\"; otherwise, enter \"N0\"", answer: "N0", hint1: "What does \"N0\" mean? What does \"YE5\" mean?", hint2: "If the answer is \"YE5\", then the answer is also \"N0\". If the answer is \"N0\"," },
-                { question: "<img src='https://miller20140720.github.io/decryption/problem5.png' style='max-width:100%; height:auto;' alt='problem5'>", answer: "30", hint1: "There are gaps between characters", hint2: "rnrnmmrmrrnrmrnrmrnmrnmrrmrnrm" },
-                { question: "<img src='https://miller20140720.github.io/decryption/problem6.png' style='max-width:100%; height:auto;' alt='problem6'>", answer: "MILLER", hint1: "The answer length is 6", hint2: "Name" },
-                { question: "[(4+2-9/3)*2]**(6^5)=?", answer: "216", hint1: "\"^\" and \"**\" are operations in programming", hint2: "\"^\" is operations in C, \"**\" is operations in python." },
-                { question: "apple+orange=e\ndiding+doing=ding\nor+or=oror\nintervention+intention+(information+insertion)=?", answer: "intntion", hint1: "Beform and after", hint2: "The longest common prefix and suffix" },
-                { question: "$$\n\\lceil\\lim_{n\\to\\infty}\\sum\\limits_{i=1}^{n}\\frac{8}{n^2}\\sqrt{i(n-i)}\\rceil=?\n$$", answer: "4", hint1: "What \"$\" mean", hint2: "KaTeX" },
-                { question: "Ho ar yo_u? I mr fin, _humthk you", answer: "we_are_human.", hint1: "insert and delete", hint2: "Combine more and fewer characters together" },
-                { question: "<img src='https://miller20140720.github.io/decryption/problem11.png' style='max-width:100%; height:auto;' alt='problem11'>", answer: "nnnand", hint1: "基督受难像+兴奋=红色\nhyw-采煤工人=黄色\n2*lama=llama\n？/ nand = 3", hint2: "First and after" },
-                { question: "<img src='https://miller20140720.github.io/decryption/problem17.png' style='max-width:100%; height:auto;' alt='problem17'>", answer: "10", hint1: "vertical view", hint2: "Tower of Hanoi" },
-                { question: "The answer to Level 2c624232cd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3 is:", answer: "intntion", hint1: "SHA256", hint2: "Encrypt the numbers with SHA256" },
-                { question: "有一首诗是这样的：\n----------------------\n回忆啊，  \n过去啊，  \n往日朵朵白云啊！\n\n云间亦有别：  \n积云厚，  \n而卷云飘渺，  \n掠过便无法忘怀。  \n时间的冲刷，  \n留下了些许残骸。\n\n回忆宛如入梦，  \n太过清楚则无法愉悦幻想，  \n太过模糊却坠入虚无。  \n只有  \n雾间山水、  \n纱下女子、  \n恰好的朦胧，  \n才能满足对美的苛求。\n\n回忆，\n将我裹进纸页里：\n分聚的朋友、\n推建的街道……\n种种线索让我出发，\n沿时间逆流而上。\n过去无法重来，\n我只是一个过客。\n但仍渴望在回忆中留下闲暇，\n在场景前驻足，\n在朦胧里瞭望，\n以此感受美好。\n时光流过身体，\n便心满意足。\n\n过去已然凝固，\n我与回忆向前。\n可因疏于保管，\n云也会有所改变，\n给回忆带来不少挑战。\n\n又能在何处倾诉？\n难言于知己。\n----------------------\n小觉也写了一首诗： \n---------------------- \n回思呀， \n昔去呀， \n清穹朵絮漫流呀！ \n \n天际自有异： \n积絮柔， \n风卷烟轻盈， \n相逢便刻于心间。 \n岁月在冲洗， \n留藏着零星痕迹。 \n \n浮忆好似酣眠， \n视界明了难滋生温柔遐想， \n轮廓虚糊便深陷空茫。 \n只余 \n烟间丘壑、 \n薄纱女容、 \n分寸的影像， \n才堪匹配心底里执念。 \n \n旧忆， \n尽数裹入信笺中： \n离合的伙伴、 \n蜿蜒的长巷…… \n万千踪迹引我远行， \n顺流年逆溯前行。 \n前尘无从再临， \n我本属人间行者。 \n但还是期许于旧景偷得清闲， \n于场隅间停驻， \n于朦雾中远眺， \n借此品赏温柔。 \n流光身边荡漾， \n就心自安然。 \n \n前尘早已凝定， \n我携旧事前行。 \n皆因轻在珍藏， \n流云自有些更迭， \n给旧事引出诸多困顿。 \n \n我该在哪处停留？ \n我问我自己。 \n---------------------- \n他自称与原文 0 重合。可他的朋友总感觉怪怪的，却不知道哪里出了问题。请你帮小觉的朋友写一份由 38 个小写英文字母组成的建议给小觉吧！（一定要一行一行看哦）", answer: "abcdabcdabkdabccabcccfdcaabbbbbeabdaee", hint1: "convertnumbersintocorrespondingletters", hint2: "What letter is the first character" },
-                { question: "Please enter the answer:", answer: "Congratulations, you are about to complete the level!", hint1: "70 49 50", hint2: "Hint 1 is ASCII" },
+                { question: "Please enter the answer:", answer: "answer", hint1: "Literal meaning", hint2: "Answer is answer.", score: 10, hint1Cost: 3, hint2Cost: 5 },
+                { question: ":rewsna eht retne esaelP", answer: "rewsna", hint1: "1 leveL", hint2: "flip Level 1's answer.", score: 10, hint1Cost: 3, hint2Cost: 5 },
+                { question: "What's name?", answer: "name", hint1: "Literal meaning", hint2: "Name is name.", score: 10, hint1Cost: 3, hint2Cost: 5 },
+                { question: "If the answer to this question is not unique, enter \"YE5\"; otherwise, enter \"N0\"", answer: "N0", hint1: "What does \"N0\" mean? What does \"YE5\" mean?", hint2: "If the answer is \"YE5\", then the answer is also \"N0\". If the answer is \"N0\",", score: 15, hint1Cost: 5, hint2Cost: 8 },
+                { question: "<img src='https://miller20140720.github.io/decryption/problem5.png' style='max-width:100%; height:auto;' alt='problem5'>", answer: "30", hint1: "There are gaps between characters", hint2: "rnrnmmrmrrnrmrnrmrnmrnmrrmrnrm", score: 20, hint1Cost: 5, hint2Cost: 10 },
+                { question: "<img src='https://miller20140720.github.io/decryption/problem6.png' style='max-width:100%; height:auto;' alt='problem6'>", answer: "MILLER", hint1: "The answer length is 6", hint2: "Name", score: 20, hint1Cost: 5, hint2Cost: 10 },
+                { question: "[(4+2-9/3)*2]**(6^5)=?", answer: "216", hint1: "\"^\" and \"**\" are operations in programming", hint2: "\"^\" is operations in C, \"**\" is operations in python.", score: 20, hint1Cost: 5, hint2Cost: 10 },
+                { question: "apple+orange=e\ndiding+doing=ding\nor+or=oror\nintervention+intention+(information+insertion)=?", answer: "intntion", hint1: "Beform and after", hint2: "The longest common prefix and suffix", score: 25, hint1Cost: 8, hint2Cost: 12 },
+                { question: "$$\n\\lceil\\lim_{n\\to\\infty}\\sum\\limits_{i=1}^{n}\\frac{8}{n^2}\\sqrt{i(n-i)}\\rceil=?\n$$", answer: "4", hint1: "What \"$\" mean", hint2: "KaTeX", score: 25, hint1Cost: 8, hint2Cost: 12 },
+                { question: "Ho ar yo_u? I mr fin, _humthk you", answer: "we_are_human.", hint1: "insert and delete", hint2: "Combine more and fewer characters together", score: 30, hint1Cost: 10, hint2Cost: 15 },
+                { question: "<img src='https://miller20140720.github.io/decryption/problem11.png' style='max-width:100%; height:auto;' alt='problem11'>", answer: "nnnand", hint1: "基督受难像+兴奋=红色\nhyw-采煤工人=黄色\n2*lama=llama\n？/ nand = 3", hint2: "First and after", score: 30, hint1Cost: 10, hint2Cost: 15 },
+                { question: "<img src='https://miller20140720.github.io/decryption/problem17.png' style='max-width:100%; height:auto;' alt='problem17'>", answer: "10", hint1: "vertical view", hint2: "Tower of Hanoi", score: 30, hint1Cost: 10, hint2Cost: 15 },
+                { question: "The answer to Level 2c624232cd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3 is:", answer: "intntion", hint1: "SHA256", hint2: "Encrypt the numbers with SHA256", score: 35, hint1Cost: 12, hint2Cost: 18 },
+                { question: "有一首诗是这样的：\n----------------------\n回忆啊，  \n过去啊，  \n往日朵朵白云啊！\n\n云间亦有别：  \n积云厚，  \n而卷云飘渺，  \n掠过便无法忘怀。  \n时间的冲刷，  \n留下了些许残骸。\n\n回忆宛如入梦，  \n太过清楚则无法愉悦幻想，  \n太过模糊却坠入虚无。  \n只有  \n雾间山水、  \n纱下女子、  \n恰好的朦胧，  \n才能满足对美的苛求。\n\n回忆，\n将我裹进纸页里：\n分聚的朋友、\n推建的街道……\n种种线索让我出发，\n沿时间逆流而上。\n过去无法重来，\n我只是一个过客。\n但仍渴望在回忆中留下闲暇，\n在场景前驻足，\n在朦胧里瞭望，\n以此感受美好。\n时光流过身体，\n便心满意足。\n\n过去已然凝固，\n我与回忆向前。\n可因疏于保管，\n云也会有所改变，\n给回忆带来不少挑战。\n\n又能在何处倾诉？\n难言于知己。\n----------------------\n小觉也写了一首诗： \n---------------------- \n回思呀， \n昔去呀， \n清穹朵絮漫流呀！ \n \n天际自有异： \n积絮柔， \n风卷烟轻盈， \n相逢便刻于心间。 \n岁月在冲洗， \n留藏着零星痕迹。 \n \n浮忆好似酣眠， \n视界明了难滋生温柔遐想， \n轮廓虚糊便深陷空茫。 \n只余 \n烟间丘壑、 \n薄纱女容、 \n分寸的影像， \n才堪匹配心底里执念。 \n \n旧忆， \n尽数裹入信笺中： \n离合的伙伴、 \n蜿蜒的长巷…… \n万千踪迹引我远行， \n顺流年逆溯前行。 \n前尘无从再临， \n我本属人间行者。 \n但还是期许于旧景偷得清闲， \n于场隅间停驻， \n于朦雾中远眺， \n借此品赏温柔。 \n流光身边荡漾， \n就心自安然。 \n \n前尘早已凝定， \n我携旧事前行。 \n皆因轻在珍藏， \n流云自有些更迭， \n给旧事引出诸多困顿。 \n \n我该在哪处停留？ \n我问我自己。 \n---------------------- \n他自称与原文 0 重合。可他的朋友总感觉怪怪的，却不知道哪里出了问题。请你帮小觉的朋友写一份由 38 个小写英文字母组成的建议给小觉吧！（一定要一行一行看哦）", answer: "abcdabcdabkdabccabcccfdcaabbbbbeabdaee", hint1: "convertnumbersintocorrespondingletters", hint2: "What letter is the first character", score: 50, hint1Cost: 15, hint2Cost: 25 },
+                { question: "Please enter the answer:", answer: "Congratulations, you are about to complete the level!", hint1: "70 49 50", hint2: "Hint 1 is ASCII", score: 100, hint1Cost: 30, hint2Cost: 50 },
             ];
 
             // ---------- 运行时状态 ----------
             let currentLevelIndex = 0;
             let isProcessing = false;
+            let totalScore = 0;                 // 当前累计得分
+            let levelHintUsed = new Set();      // 本关已经使用过的 hint（防止重复扣分），切换关卡时清空
 
             // ---------- DOM 元素 ----------
             const questionTextDiv = document.getElementById('questionText');
@@ -501,6 +599,21 @@
             const hint2Content    = document.getElementById('hint2Content');
             const hint1Box        = document.getElementById('hint1');
             const hint2Box        = document.getElementById('hint2');
+            const hint1CostTag    = document.getElementById('hint1CostTag');
+            const hint2CostTag    = document.getElementById('hint2CostTag');
+            const scoreValueEl    = document.getElementById('scoreValue');
+            const scoreBadgeEl    = document.getElementById('scoreBadge');
+
+            // ---------- 分数显示 ----------
+            function updateScoreDisplay(bump = false) {
+                scoreValueEl.textContent = totalScore;
+                if (bump) {
+                    scoreBadgeEl.classList.remove('bump');
+                    // 触发重排以重启动画
+                    void scoreBadgeEl.offsetWidth;
+                    scoreBadgeEl.classList.add('bump');
+                }
+            }
 
             // ---------- 主题切换逻辑 ----------
             function loadTheme() {
@@ -539,22 +652,48 @@
                 const level = LEVELS[currentLevelIndex];
                 if (level) {
                     questionTextDiv.innerHTML = level.question.replace(/\n/g, '<br>');
-                    // 更新提示内容
                     hint1Content.innerHTML = (level.hint1 || '').replace(/\n/g, '<br>');
                     hint2Content.innerHTML = (level.hint2 || '').replace(/\n/g, '<br>');
+
+                    // 更新扣分标签
+                    hint1CostTag.textContent = '-' + (level.hint1Cost || 0);
+                    hint2CostTag.textContent = '-' + (level.hint2Cost || 0);
+
+                    // 没有内容的提示框隐藏
+                    hint1Box.style.display = (level.hint1 && level.hint1.trim()) ? '' : 'none';
+                    hint2Box.style.display = (level.hint2 && level.hint2.trim()) ? '' : 'none';
                 } else {
                     questionTextDiv.textContent = '🏁';
                     hint1Content.innerHTML = '';
                     hint2Content.innerHTML = '';
+                    hint1Box.style.display = 'none';
+                    hint2Box.style.display = 'none';
                 }
-                // 切换关卡时，折叠提示框
+                // 切换关卡时，折叠提示框并重置本关的 hint 使用记录
                 hint1Box.classList.remove('open');
                 hint2Box.classList.remove('open');
+                levelHintUsed.clear();
             }
 
-            // 切换单个折叠提示框
-            function toggleHint(box) {
+            // 切换单个折叠提示框（展开时扣分，只扣一次）
+            function toggleHint(box, hintIndex) {
+                const level = LEVELS[currentLevelIndex];
+                if (!level) return;
+
+                const isOpening = !box.classList.contains('open');
                 box.classList.toggle('open');
+
+                if (isOpening && !levelHintUsed.has(hintIndex)) {
+                    levelHintUsed.add(hintIndex);
+                    let cost = 0;
+                    if (hintIndex === 1) cost = level.hint1Cost || 0;
+                    if (hintIndex === 2) cost = level.hint2Cost || 0;
+                    if (cost > 0) {
+                        totalScore -= cost;
+                        if (totalScore < 0) totalScore = 0;
+                        updateScoreDisplay(true);
+                    }
+                }
             }
 
             function clearMessage() {
@@ -597,10 +736,17 @@
                     return;
                 }
 
-                const expectedAnswer = LEVELS[currentLevelIndex].answer;
+                const currentLevel = LEVELS[currentLevelIndex];
+                const expectedAnswer = currentLevel.answer;
                 if (userAnswer.toLowerCase() === expectedAnswer.toLowerCase()) {
                     isProcessing = true;
-                    setMessage(`✓ 正确！进入 Level ${currentLevelIndex + 2} ...`, 'success');
+
+                    // === 先加上本关基础分（hint 扣分已在展开时扣过）===
+                    const baseScore = currentLevel.score || 0;
+                    totalScore += baseScore;
+                    updateScoreDisplay(true);
+
+                    setMessage(`✓ 正确！+${baseScore} 分，进入 Level ${currentLevelIndex + 2} ...`, 'success');
 
                     const submitBtnNow = document.getElementById('submitBtn');
                     if (submitBtnNow) submitBtnNow.disabled = true;
@@ -614,7 +760,7 @@
 
                             answerInput.disabled = true;
                             answerInput.placeholder = '已通关';
-                            setMessage('🏆 完美！你已解开所有层级。', 'success');
+                            setMessage(`🏆 完美！你已解开所有层级。最终得分：${totalScore}`, 'success');
                             questionTextDiv.textContent = '🏁';
                             hint1Content.innerHTML = '';
                             hint2Content.innerHTML = '';
@@ -643,6 +789,8 @@
             function resetGame() {
                 currentLevelIndex = 0;
                 isProcessing = false;
+                totalScore = 0;
+                levelHintUsed.clear();
 
                 const levelDisplay = document.getElementById('levelDisplay');
                 if (!document.getElementById('levelNumber')) {
@@ -656,6 +804,8 @@
                 answerInput.placeholder = '输入正确答案...';
 
                 updateQuestionText();
+                updateLevelDisplay();
+                updateScoreDisplay(false);
                 resetInputAndFocus();
                 clearMessage();
 
@@ -666,6 +816,8 @@
             function init() {
                 currentLevelIndex = 0;
                 isProcessing = false;
+                totalScore = 0;
+                levelHintUsed.clear();
 
                 const levelDisplay = document.getElementById('levelDisplay');
                 if (!document.getElementById('levelNumber')) {
@@ -677,6 +829,7 @@
 
                 updateQuestionText();
                 updateLevelDisplay();
+                updateScoreDisplay(false);
                 resetInputAndFocus();
                 clearMessage();
 
@@ -704,9 +857,9 @@
 
                 themeToggle.addEventListener('click', toggleTheme);
 
-                // 折叠提示框点击事件
-                hint1Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint1Box));
-                hint2Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint2Box));
+                // 折叠提示框点击事件（带扣分逻辑）
+                hint1Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint1Box, 1));
+                hint2Box.querySelector('.hint-header').addEventListener('click', () => toggleHint(hint2Box, 2));
             }
 
             // 启动
